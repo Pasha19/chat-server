@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "069acde20f46a8323945820f1f5a6119",
+    "content-hash": "63b637d9af33889b2e103ec28f28b4d4",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -834,6 +834,62 @@
                 "zf"
             ],
             "time": "2018-06-05T15:28:00+00:00"
+        },
+        {
+            "name": "zendframework/zend-expressive-swoole",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zendframework/zend-expressive-swoole.git",
+                "reference": "0680341c89705fda96bfdac18f18767337d99d63"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zendframework/zend-expressive-swoole/zipball/0680341c89705fda96bfdac18f18767337d99d63",
+                "reference": "0680341c89705fda96bfdac18f18767337d99d63",
+                "shasum": ""
+            },
+            "require": {
+                "ext-swoole": "*",
+                "php": "^7.1",
+                "psr/container": "^1.0",
+                "psr/http-message": "^1.0",
+                "psr/http-message-implementation": "^1.0",
+                "psr/http-server-handler": "^1.0",
+                "zendframework/zend-diactoros": "^1.8",
+                "zendframework/zend-expressive": "^3.0.2",
+                "zendframework/zend-httphandlerrunner": "^1.0.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.1.1",
+                "zendframework/zend-coding-standard": "~1.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Zend\\Expressive\\Swoole\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Swoole support for Expressive",
+            "keywords": [
+                "ZendFramework",
+                "components",
+                "expressive",
+                "psr-15",
+                "psr-7",
+                "swoole",
+                "zf"
+            ],
+            "time": "2018-07-10T19:29:46+00:00"
         },
         {
             "name": "zendframework/zend-expressive-template",
