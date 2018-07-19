@@ -31,11 +31,12 @@
         "zendframework/zend-stdlib": "^3.1"
     },
     "require-dev": {
+        "filp/whoops": "^2.1.12",
+        "friendsofphp/php-cs-fixer": "^2.12",
         "phpunit/phpunit": "^7.0.1",
         "roave/security-advisories": "dev-master",
         "zendframework/zend-expressive-tooling": "^1.0",
-        "zfcampus/zf-development-mode": "^3.1",
-        "filp/whoops": "^2.1.12"
+        "zfcampus/zf-development-mode": "^3.1"
     },
     "autoload": {
         "psr-4": {
@@ -59,6 +60,7 @@
             "@analyze",
             "@test"
         ],
+        "fix-cs": "php-cs-fixer fix --ansi --diff",
         "analyze": "phpstan analyze -l max -c ./phpstan.installer.neon ./src ./config",
         "clear-config-cache": "php bin/clear-config-cache.php",
         "serve": "php -S 0.0.0.0:8080 -t public/",
