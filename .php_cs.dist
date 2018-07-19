@@ -1,9 +1,11 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__.'/public')
     ->in(__DIR__.'/config')
-    ->in(__DIR__.'/bin')
+    ->append([
+        __DIR__.'/clear-config-cache.php',
+        __DIR__.'/index.php',
+    ])
 ;
 
 return PhpCsFixer\Config::create()

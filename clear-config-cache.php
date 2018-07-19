@@ -12,11 +12,9 @@
 
 declare(strict_types=1);
 
-chdir(__DIR__.'/../');
+require __DIR__.'/vendor/autoload.php';
 
-require 'vendor/autoload.php';
-
-$config = include 'config/config.php';
+$config = include __DIR__.'/config/config.php';
 
 if (!isset($config['config_cache_path'])) {
     echo 'No configuration cache path found'.PHP_EOL;
