@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Zend\Expressive\Application;
 use Zend\Expressive\MiddlewareFactory;
 
-/**
+/*
  * Setup routes with a single request method:
  *
  * $app->get('/', App\Handler\HomePageHandler::class, 'home');
@@ -19,5 +19,5 @@ use Zend\Expressive\MiddlewareFactory;
  *
  * $app->route('/contact', App\Handler\ContactHandler::class, ['GET', 'POST', ...], 'contact');
  */
-return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container) : void {
+return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void {
 };
