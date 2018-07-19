@@ -20,6 +20,7 @@
     },
     "require": {
         "php": "^7.2",
+        "ext-swoole": "^4.0",
         "zendframework/zend-component-installer": "^2.1.1",
         "zendframework/zend-config-aggregator": "^1.0",
         "zendframework/zend-diactoros": "^1.7.1",
