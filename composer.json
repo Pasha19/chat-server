@@ -33,6 +33,7 @@
     "require-dev": {
         "filp/whoops": "^2.1.12",
         "friendsofphp/php-cs-fixer": "^2.12",
+        "phpstan/phpstan": "^0.10.1",
         "phpunit/phpunit": "^7.0.1",
         "roave/security-advisories": "dev-master",
         "zendframework/zend-expressive-tooling": "^1.0",
@@ -61,7 +62,10 @@
             "@test"
         ],
         "fix-cs": "php-cs-fixer fix --ansi --diff",
-        "analyze": "phpstan analyze -l max -c ./phpstan.installer.neon ./src ./config",
+        "analyze": [
+            "php-cs-fixer fix --ansi --diff --dry-run",
+            "phpstan analyze --level=max --ansi config"
+        ],
         "clear-config-cache": "php bin/clear-config-cache.php",
         "serve": "php -S 0.0.0.0:8080 -t public/",
         "test": "phpunit --colors=always",
