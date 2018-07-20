@@ -32,6 +32,7 @@
         "zendframework/zend-stdlib": "^3.1"
     },
     "require-dev": {
+        "eaglewu/swoole-ide-helper": "dev-master",
         "friendsofphp/php-cs-fixer": "^2.12",
         "phpstan/phpstan": "^0.10.1",
         "phpunit/phpunit": "^7.0.1",
@@ -42,12 +43,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/App/src/"
+            "App\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "AppTest\\": "test/AppTest/"
+            "Test\\": "test/"
         }
     },
     "scripts": {
@@ -66,7 +67,8 @@
         "analyze": [
             "php-cs-fixer fix --ansi --diff --dry-run",
             "phpcpd --ansi --progress config",
-            "phpstan analyze --level=max --ansi config"
+            "phpcpd --ansi --progress src",
+            "phpstan analyze --level=max --configuration=phpstan.neon --ansi config src"
         ],
         "clear-config-cache": "php bin/clear-config-cache.php",
         "test": "phpunit --colors=always",
