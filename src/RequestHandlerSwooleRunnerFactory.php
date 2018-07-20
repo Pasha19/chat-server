@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Swoole\Http\Server as SwooleHttpServer;
 use Zend\Expressive\Response\ServerRequestErrorResponseGenerator;
-use Zend\HttpHandlerRunner\RequestHandlerRunner;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
-class RequestHandlerSwooleRunnerFactory
+class RequestHandlerSwooleRunnerFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container): RequestHandlerRunner
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         return new RequestHandlerSwooleRunner(
             $container->get('Zend\Expressive\ApplicationPipeline'),
