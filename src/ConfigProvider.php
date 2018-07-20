@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
+use Zend\Stratigility\Middleware\ErrorHandler;
 
 class ConfigProvider
 {
@@ -20,6 +21,11 @@ class ConfigProvider
         return [
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
+            ],
+            'delegators' => [
+                ErrorHandler::class => [
+                    ErrorLoggerDelegatorFactory::class,
+                ],
             ],
         ];
     }
