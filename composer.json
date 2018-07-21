@@ -68,7 +68,8 @@
             "php-cs-fixer fix --ansi --diff --dry-run",
             "phpcpd --ansi --progress config",
             "phpcpd --ansi --progress src",
-            "phpstan analyze --level=max --configuration=phpstan.neon --ansi config src"
+            "phpcpd --ansi --progress test",
+            "phpstan analyze --level=max --configuration=phpstan.neon --ansi config src test"
         ],
         "clear-config-cache": "php bin/clear-config-cache.php",
         "test": "phpunit --colors=always",

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\App\Service;
+namespace App\Test\Service;
 
 use App\Service\MemoryUsageService;
 use PHPUnit\Framework\TestCase;

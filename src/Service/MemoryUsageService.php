@@ -7,17 +7,17 @@ namespace App\Service;
 class MemoryUsageService
 {
     private const BYTES_IN_MIB = 1048576;
-    
+
     private $memoryUsed = 0;
     private $memoryDiff = 0;
     private $memoryPeek = 0;
-    
+
     public function tick(): void
     {
-        $memoryUsage = memory_get_usage(true);
+        $memoryUsage = \memory_get_usage(true);
         $this->memoryDiff = $memoryUsage - $this->memoryUsed;
         $this->memoryUsed = $memoryUsage;
-        $this->memoryPeek = memory_get_peak_usage(true);
+        $this->memoryPeek = \memory_get_peak_usage(true);
     }
 
     public function getMemoryUsed(): float

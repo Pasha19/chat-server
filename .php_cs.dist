@@ -4,6 +4,7 @@ $finder = PhpCsFixer\Finder::create()
     ->in([
         __DIR__.'/config',
         __DIR__.'/src',
+        __DIR__.'/test',
     ])
     ->append([
         __DIR__.'/clear-config-cache.php',
