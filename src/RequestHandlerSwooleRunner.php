@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Response\SwooleResponseHandler;
+use App\Service\MemoryUsageService;
 use Psr\Http\Server\RequestHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -19,12 +20,16 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     private $serverRequestErrorResponseGenerator;
     private $serverRequestFactory;
     private $swooleHttpServer;
+    private $memoryUsageService;
+    private $memoryUsageInteval;
 
     public function __construct(
         RequestHandlerInterface $handler,
         callable $serverRequestFactory,
         callable $serverRequestErrorResponseGenerator,
-        Server $swooleHttpServer
+        Server $swooleHttpServer,
+        MemoryUsageService $memoryUsageService,
+        int $memoryUsageInterval
     ) {
         $this->handler = $handler;
         $this->serverRequestFactory = \is_object($serverRequestFactory) && $serverRequestFactory instanceof \Closure ?
@@ -38,6 +43,8 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 \Closure::fromCallable($serverRequestErrorResponseGenerator)
         ;
         $this->swooleHttpServer = $swooleHttpServer;
+        $this->memoryUsageService = $memoryUsageService;
+        $this->memoryUsageInteval = $memoryUsageInterval;
     }
 
     public function run(): void
@@ -69,7 +76,14 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 $psr7Response->setSwooleResponse($response);
             }
         });
+
+        $timerId = $this->getMemoryUsageTimer();
+
         $this->swooleHttpServer->start();
+
+        if ($timerId !== 0) {
+            $this->swooleHttpServer->clearTimer($timerId);
+        }
     }
 
     private function emitMarshalServerRequestException(
@@ -78,5 +92,27 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     ): void {
         $response = ($this->serverRequestErrorResponseGenerator)($exception);
         $emitter->emit($response);
+    }
+
+    private function &getMemoryUsageTimer(): int
+    {
+        $timerId = 0;
+        if ($this->memoryUsageInteval > 0) {
+            $this->swooleHttpServer->on('workerStart', function () use (&$timerId) {
+                $timerId = $this->swooleHttpServer->tick($this->memoryUsageInteval, function (): void {
+                    $this->memoryUsageService->tick();
+                    \printf(
+                        '[%s] - Memory usage: %.3f (%+.3f) Peek usage: %.3f%s',
+                        \date('Y-m-d H:i:sO'),
+                        $this->memoryUsageService->getMemoryUsed(),
+                        $this->memoryUsageService->getMemoryDiff(),
+                        $this->memoryUsageService->getMemoryPeek(),
+                        PHP_EOL
+                    );
+                });
+            });
+        }
+
+        return $timerId;
     }
 }

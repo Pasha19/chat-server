@@ -6,6 +6,7 @@ namespace App;
 
 use App\Container\ErrorLoggerDelegator;
 use App\Container\RequestHandlerSwooleRunnerFactory;
+use App\Service\MemoryUsageService;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
@@ -21,6 +22,9 @@ class ConfigProvider
     public function getDependencies(): array
     {
         return [
+            'invokables' => [
+                MemoryUsageService::class,
+            ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
             ],
