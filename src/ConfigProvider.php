@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Container\ErrorLoggerDelegator;
+use App\Container\RequestHandlerSwooleRunnerFactory;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
@@ -24,7 +26,7 @@ class ConfigProvider
             ],
             'delegators' => [
                 ErrorHandler::class => [
-                    ErrorLoggerDelegatorFactory::class,
+                    ErrorLoggerDelegator::class,
                 ],
             ],
         ];

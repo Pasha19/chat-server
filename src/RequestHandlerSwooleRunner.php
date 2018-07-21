@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Response\SwooleResponseHandler;
 use Psr\Http\Server\RequestHandlerInterface;
+use Swoole\Http\Request;
+use Swoole\Http\Response;
 use Swoole\Http\Server;
 use Zend\Expressive\Swoole\SwooleEmitter;
 use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
@@ -12,8 +15,6 @@ use Zend\HttpHandlerRunner\RequestHandlerRunner;
 
 class RequestHandlerSwooleRunner extends RequestHandlerRunner
 {
-    private const ORIGINAL_HASH = '1730f6d16b1cd738d3b4d2ae8c75de70';
-
     private $handler;
     private $serverRequestErrorResponseGenerator;
     private $serverRequestFactory;
@@ -25,8 +26,6 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         callable $serverRequestErrorResponseGenerator,
         Server $swooleHttpServer
     ) {
-        $this->assertOriginalContent();
-
         $this->handler = $handler;
         $this->serverRequestFactory = \is_object($serverRequestFactory) && $serverRequestFactory instanceof \Closure ?
             $serverRequestFactory :
@@ -43,13 +42,13 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
 
     public function run(): void
     {
-        $this->swooleHttpServer->on('start', function ($server): void {
+        $this->swooleHttpServer->on('start', function (Server $server): void {
             \printf('Swoole is running at %s:%s%s', $server->host, $server->port, PHP_EOL);
         });
 
-        $this->swooleHttpServer->on('request', function ($request, $response): void {
+        $this->swooleHttpServer->on('request', function (Request $request, Response $response): void {
             \printf(
-                '%s - %s - %s %s%s',
+                '[%s] - %s - %s %s%s',
                 \date('Y-m-d H:i:sO'),
                 $request->server['remote_addr'],
                 $request->server['request_method'],
@@ -79,19 +78,5 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     ): void {
         $response = ($this->serverRequestErrorResponseGenerator)($exception);
         $emitter->emit($response);
-    }
-
-    private function assertOriginalContent(): void
-    {
-        $path = __DIR__.'/../vendor/zendframework/zend-expressive-swoole/src/RequestHandlerSwooleRunner.php';
-        $content = \file_get_contents($path);
-        if ($content === false) {
-            throw new \LogicException(\sprintf('File "%s" not found%s', \realpath($path), PHP_EOL));
-        }
-
-        $hash = \md5($content);
-        if ($hash !== self::ORIGINAL_HASH) {
-            throw new \LogicException(\sprintf('Invalid runner hash. Expected "%s", actual "%s"', self::ORIGINAL_HASH, $hash));
-        }
     }
 }

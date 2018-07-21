@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Response;
 
 use Psr\Http\Message\ResponseInterface;
 use Swoole\Http\Response;

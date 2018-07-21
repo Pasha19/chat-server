@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Container;
 
 use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -10,9 +10,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
-class ErrorLoggerDelegatorFactory implements DelegatorFactoryInterface
+class ErrorLoggerDelegator implements DelegatorFactoryInterface
 {
-    public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null)
+    public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null): ErrorHandler
     {
         /** @var ErrorHandler $errorHandler */
         $errorHandler = $callback();

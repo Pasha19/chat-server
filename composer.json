@@ -48,7 +48,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Test\\": "test/"
+            "App\\Test\\": "test/"
         }
     },
     "scripts": {
@@ -72,6 +72,7 @@
         ],
         "clear-config-cache": "php bin/clear-config-cache.php",
         "test": "phpunit --colors=always",
-        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml",
+        "server": "php index.php"
     }
 }
