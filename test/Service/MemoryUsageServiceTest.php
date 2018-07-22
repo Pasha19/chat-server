@@ -15,7 +15,7 @@ class MemoryUsageServiceTest extends TestCase
         $this->assertSame(0.0, $memoryUsageService->getMemoryUsed());
         $this->assertSame(0.0, $memoryUsageService->getMemoryDiff());
         $this->assertSame(0.0, $memoryUsageService->getMemoryPeek());
-        $memoryUsageService->tick();
+        $memoryUsageService();
         $memoryUsed = $memoryUsageService->getMemoryUsed();
         $memoryDiff = $memoryUsageService->getMemoryDiff();
         $memoryPeek = $memoryUsageService->getMemoryPeek();
@@ -25,7 +25,7 @@ class MemoryUsageServiceTest extends TestCase
         for ($i = 0, $str = 'a'; $i < 25; ++$i) {
             $str .= $str;
         }
-        $memoryUsageService->tick();
+        $memoryUsageService();
         $newMemoryUsed = $memoryUsageService->getMemoryUsed();
         $newMemoryDiff = $memoryUsageService->getMemoryDiff();
         $newMemoryPeek = $memoryUsageService->getMemoryPeek();

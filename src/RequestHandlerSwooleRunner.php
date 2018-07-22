@@ -103,7 +103,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         if ($this->memoryUsageInteval > 0) {
             $this->swooleHttpServer->on('workerStart', function () use (&$timerId): void {
                 $timerId = $this->swooleHttpServer->tick($this->memoryUsageInteval, function (): void {
-                    $this->memoryUsageService->tick();
+                    ($this->memoryUsageService)();
                     \printf(
                         '[%s] - Memory usage: %.3f MiB (%+.3f MiB) Peek usage: %.3f MiB%s',
                         \date('Y-m-d H:i:sO'),

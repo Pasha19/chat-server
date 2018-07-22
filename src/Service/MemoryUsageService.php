@@ -12,7 +12,7 @@ class MemoryUsageService
     private $memoryDiff = 0;
     private $memoryPeek = 0;
 
-    public function tick(): void
+    public function __invoke(): void
     {
         $memoryUsage = \memory_get_usage(true);
         $this->memoryDiff = $memoryUsage - $this->memoryUsed;
