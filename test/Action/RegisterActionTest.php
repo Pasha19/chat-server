@@ -28,7 +28,7 @@ class RegisterActionTest extends TestCase
         $serverRequest = new ServerRequest(
             [],
             [],
-            '/register',
+            '/api/register',
             'POST',
              StringStream::create((string) \json_encode($requestJson)),
             ['Content-Type' => 'application/json'],
@@ -57,7 +57,7 @@ class RegisterActionTest extends TestCase
         $serverRequest = new ServerRequest(
             [],
             [],
-            '/register',
+            '/api/register',
             'POST',
             StringStream::create((string) \json_encode($requestJson)),
             ['Content-Type' => 'application/json'],
@@ -85,7 +85,7 @@ class RegisterActionTest extends TestCase
         $serverRequest = new ServerRequest(
             [],
             [],
-            '/register',
+            '/api/register',
             'POST',
             StringStream::create((string) \json_encode($requestJson)),
             ['Content-Type' => 'application/json'],
