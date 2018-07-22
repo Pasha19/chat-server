@@ -13,6 +13,7 @@ use App\Container\ServerRequestSwooleFactory;
 use App\Service\AuthService;
 use App\Service\MemoryUsageService;
 use App\Service\UsernameValidatorService;
+use App\Service\UsersConnectionsService;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
@@ -41,6 +42,7 @@ class ConfigProvider
                 Parser::class,
                 ValidationData::class,
                 UsernameValidatorService::class,
+                UsersConnectionsService::class,
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,

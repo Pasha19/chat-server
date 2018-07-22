@@ -21,7 +21,6 @@ class RegisterActionTest extends TestCase
     {
         $name = 'Tester';
         $token = 'jwt_token';
-        /** @var ObjectProphecy&AuthService */
         $auth = $this->prophesize(AuthService::class);
         $auth->register($name)->shouldBeCalledTimes(1)->willReturn($token);
         $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
@@ -48,7 +47,6 @@ class RegisterActionTest extends TestCase
 
     public function testBadRegister(): void
     {
-        /** @var ObjectProphecy&AuthService */
         $auth = $this->prophesize(AuthService::class);
         /** @var string $any */
         $any = Argument::any();

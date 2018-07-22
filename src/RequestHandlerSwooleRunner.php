@@ -7,6 +7,7 @@ namespace App;
 use App\Http\SwooleResponseHandler;
 use App\Http\SwooleServerRequest;
 use App\Service\MemoryUsageService;
+use App\Service\UsersConnectionsService;
 use Psr\Http\Server\RequestHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -22,6 +23,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     private $serverRequestFactory;
     private $swooleHttpServer;
     private $memoryUsageService;
+    private $usersConnections;
     private $memoryUsageInteval;
 
     public function __construct(
@@ -29,6 +31,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         callable $serverRequestFactory,
         callable $serverRequestErrorResponseGenerator,
         Server $swooleHttpServer,
+        UsersConnectionsService $userConnections,
         MemoryUsageService $memoryUsageService,
         int $memoryUsageInterval
     ) {
@@ -44,6 +47,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 \Closure::fromCallable($serverRequestErrorResponseGenerator)
         ;
         $this->swooleHttpServer = $swooleHttpServer;
+        $this->usersConnections = $userConnections;
         $this->memoryUsageService = $memoryUsageService;
         $this->memoryUsageInteval = $memoryUsageInterval;
     }
@@ -78,6 +82,10 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
             } else {
                 $psr7Response->setSwooleResponse($response);
             }
+        });
+
+        $this->swooleHttpServer->on('close', function (Server $server, int $fd): void {
+            $this->usersConnections->removeConnectionByFd($fd);
         });
 
         $timerId = $this->getMemoryUsageTimer();
