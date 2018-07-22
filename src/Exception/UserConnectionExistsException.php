@@ -6,8 +6,8 @@ namespace App\Exception;
 
 class UserConnectionExistsException extends RuntimeException
 {
-    public function __construct(string $uid, int $fd, ?\Throwable $previous = null)
+    public function __construct(string $uid, int $fd, int $code = 500, ?\Throwable $previous = null)
     {
-        parent::__construct(\sprintf('Connection for uid "%s" already exists. fd: %d', $uid, $fd), 500, $previous);
+        parent::__construct(\sprintf('Connection for uid "%s" already exists. fd: %d', $uid, $fd), $code, $previous);
     }
 }
