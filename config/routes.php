@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Action\RegisterAction;
 use Psr\Container\ContainerInterface;
 use Zend\Expressive\Application;
+use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\Expressive\MiddlewareFactory;
 
 /*
@@ -20,4 +22,5 @@ use Zend\Expressive\MiddlewareFactory;
  * $app->route('/contact', App\Handler\ContactHandler::class, ['GET', 'POST', ...], 'contact');
  */
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void {
+    $app->post('/register', [BodyParamsMiddleware::class, RegisterAction::class]);
 };

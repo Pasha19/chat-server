@@ -4,9 +4,18 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Action\RegisterAction;
+use App\Container\AuthServiceFactory;
 use App\Container\ErrorLoggerDelegator;
+use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
+use App\Service\AuthService;
 use App\Service\MemoryUsageService;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Parser;
+use Lcobucci\JWT\Signer;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\ValidationData;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
@@ -24,9 +33,15 @@ class ConfigProvider
         return [
             'invokables' => [
                 MemoryUsageService::class,
+                Builder::class,
+                Signer::class => Sha256::class,
+                Parser::class,
+                ValidationData::class,
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
+                AuthService::class => AuthServiceFactory::class,
+                RegisterAction::class => RegisterActionFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [
