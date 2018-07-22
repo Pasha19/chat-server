@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Response\SwooleResponseHandler;
+use App\Http\SwooleResponseHandler;
+use App\Http\SwooleServerRequest;
 use App\Service\MemoryUsageService;
 use Psr\Http\Server\RequestHandlerInterface;
 use Swoole\Http\Request;
@@ -63,7 +64,9 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 PHP_EOL
             );
             try {
+                /** @var SwooleServerRequest $psr7Request */
                 $psr7Request = ($this->serverRequestFactory)($request);
+                $psr7Request->setFd($request->fd);
             } catch (\Throwable $e) {
                 $this->emitMarshalServerRequestException(new SwooleEmitter($response), $e);
 

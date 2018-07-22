@@ -9,6 +9,7 @@ use App\Container\AuthServiceFactory;
 use App\Container\ErrorLoggerDelegator;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
+use App\Container\ServerRequestSwooleFactory;
 use App\Service\AuthService;
 use App\Service\MemoryUsageService;
 use App\Service\UsernameValidatorService;
@@ -17,6 +18,7 @@ use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\ValidationData;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
@@ -42,6 +44,7 @@ class ConfigProvider
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
+                ServerRequestInterface::class => ServerRequestSwooleFactory::class,
                 AuthService::class => AuthServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
             ],
