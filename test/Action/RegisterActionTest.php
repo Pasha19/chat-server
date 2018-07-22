@@ -6,6 +6,7 @@ namespace App\Test\Action;
 
 use App\Action\RegisterAction;
 use App\Service\AuthService;
+use App\Service\UsernameValidatorService;
 use App\Test\StringStream;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -23,7 +24,7 @@ class RegisterActionTest extends TestCase
         /** @var ObjectProphecy&AuthService */
         $auth = $this->prophesize(AuthService::class);
         $auth->register($name)->shouldBeCalledTimes(1)->willReturn($token);
-        $action = new RegisterAction($auth->reveal());
+        $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
         $requestJson = ['name' => $name];
         $serverRequest = new ServerRequest(
             [],
@@ -53,7 +54,7 @@ class RegisterActionTest extends TestCase
         $any = Argument::any();
         $auth->register($any)->shouldNotBeCalled();
 
-        $action = new RegisterAction($auth->reveal());
+        $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
         $requestJson = ['foo' => 'bar'];
         $serverRequest = new ServerRequest(
             [],
@@ -71,5 +72,33 @@ class RegisterActionTest extends TestCase
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = $response->getBody()->getContents();
         $this->assertErrorResponseFormat($responseBody, 'name not provided');
+    }
+
+    public function testBadName(): void
+    {
+        /** @var ObjectProphecy&AuthService */
+        $auth = $this->prophesize(AuthService::class);
+        /** @var string $any */
+        $any = Argument::any();
+        $auth->register($any)->shouldNotBeCalled();
+
+        $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
+        $requestJson = ['name' => 'E:123'];
+        $serverRequest = new ServerRequest(
+            [],
+            [],
+            '/register',
+            'POST',
+            StringStream::create((string) \json_encode($requestJson)),
+            ['Content-Type' => 'application/json'],
+            [],
+            [],
+            $requestJson
+        );
+
+        $response = $action->handle($serverRequest);
+        $this->assertSame(400, $response->getStatusCode());
+        $responseBody = $response->getBody()->getContents();
+        $this->assertErrorResponseFormat($responseBody, 'name not valid');
     }
 }

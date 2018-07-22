@@ -11,6 +11,7 @@ use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Service\AuthService;
 use App\Service\MemoryUsageService;
+use App\Service\UsernameValidatorService;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
@@ -37,6 +38,7 @@ class ConfigProvider
                 Signer::class => Sha256::class,
                 Parser::class,
                 ValidationData::class,
+                UsernameValidatorService::class,
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
