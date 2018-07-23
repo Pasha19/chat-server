@@ -17,13 +17,11 @@ class TokenServiceTest extends TestCase
     private const USER_NAME = 'Tester';
     private $tokenService;
     private $parser;
-    private $validator;
 
-    public function setUp(): void/* The :void return type declaration that should be here would cause a BC issue */
+    public function setUp(): void/* The :void return type declaration that should be here would cause a BC issue. FIXME: cs-fixer added void */
     {
         $this->parser = new Parser();
-        $this->validator = new ValidationData();
-        $this->tokenService = new TokenService(new Builder(), new Sha256(), $this->parser, $this->validator, self::TEST_SECRET_KEY);
+        $this->tokenService = new TokenService(new Builder(), new Sha256(), $this->parser, new ValidationData(), self::TEST_SECRET_KEY);
     }
 
     public function testGetTokenByName(): string
@@ -58,14 +56,11 @@ class TokenServiceTest extends TestCase
     }
 
     /**
-     * @depends testGetUserByToken
      * @expectedException \App\Exception\BadTokenException
-     *
-     * @param string $strToken
      */
-    public function testExpiredToken(string $strToken): void
+    public function testExpiredToken(): void
     {
-        $this->validator->setCurrentTime(\time() + 30 * 24 * 60 * 60 + 1);
+        $strToken = $this->tokenService->getTokenByName(self::USER_NAME, -1);
         $this->tokenService->getUserByToken($strToken);
     }
 

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Action\ListenAction;
+use App\Action\PostAction;
 use App\Action\RegisterAction;
 use App\Container\AuthServiceFactory;
+use App\Container\ChatActionFactory;
 use App\Container\ErrorLoggerDelegator;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
@@ -52,6 +55,8 @@ class ConfigProvider
                 TokenService::class => TokenServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
                 AuthService::class => AuthServiceFactory::class,
+                ListenAction::class => ChatActionFactory::class,
+                PostAction::class => ChatActionFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [

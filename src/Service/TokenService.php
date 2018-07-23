@@ -37,24 +37,28 @@ class TokenService
         $this->secret = $secret;
     }
 
-    public function getTokenByName(string $name): string
+    public function getTokenByName(string $name, int $ttl = self::SECONDS_IN_MONTH): string
     {
         $time = \time();
 
-        return (string) $this->jwtBuilder
+        $token = $this->jwtBuilder
             ->setIssuedAt($time)
             ->setNotBefore($time)
-            ->setExpiration($time + self::SECONDS_IN_MONTH)
+            ->setExpiration($time + $ttl)
             ->set('name', $name)
             ->set('uid', $this->getUid($name))
             ->sign($this->signer, $this->secret)
             ->getToken()
         ;
+        $this->jwtBuilder->unsign();
+
+        return (string) $token;
     }
 
     public function getUserByToken(string $strToken): UserInterface
     {
         $token = $this->parser->parse($strToken);
+        $this->validator->setCurrentTime(\time());
         $valid = $token->validate($this->validator);
         if (!$valid) {
             throw new BadTokenException();

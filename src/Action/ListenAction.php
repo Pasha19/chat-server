@@ -6,22 +6,23 @@ namespace App\Action;
 
 use App\Http\JsonSwooleResponse;
 use App\Http\SwooleServerRequest;
-use App\Service\UsersConnectionsService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Zend\Expressive\Authentication\UserInterface;
 
-class ListenAction implements RequestHandlerInterface
+class ListenAction extends ChatAction
 {
-    private $usersConnection;
-
-    public function __construct(UsersConnectionsService $usersConnections)
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $this->usersConnection = $usersConnections;
+        $response = new JsonSwooleResponse('in process...');
+        $user = $this->getUser($request);
+        $swooleRequest = $this->getSwooleRequest($request);
+        $usersConnections = $this->getUsersConnections();
+        $usersConnections->addUserConnection($user, $response, $swooleRequest);
+
+        return $response;
     }
 
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    private function getSwooleRequest(ServerRequestInterface $request): SwooleServerRequest
     {
         if (!$request instanceof SwooleServerRequest) {
             throw new \LogicException(
@@ -32,13 +33,7 @@ class ListenAction implements RequestHandlerInterface
                 )
             );
         }
-        $user = $request->getAttribute(UserInterface::class, null);
-        if (!$user instanceof UserInterface) {
-            throw new \LogicException('User not provided. Probably authentication not configured.');
-        }
-        $response = new JsonSwooleResponse('in process...');
-        $this->usersConnection->addUserConnection($user, $response, $request);
 
-        return $response;
+        return $request;
     }
 }
