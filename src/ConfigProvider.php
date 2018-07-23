@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App;
 
 use App\Action\RegisterAction;
-use App\Container\TokenServiceFactory;
+use App\Container\AuthServiceFactory;
 use App\Container\ErrorLoggerDelegator;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Container\ServerRequestSwooleFactory;
-use App\Service\TokenService;
+use App\Container\TokenServiceFactory;
+use App\Service\AuthService;
 use App\Service\MemoryUsageService;
+use App\Service\TokenService;
 use App\Service\UsernameValidatorService;
 use App\Service\UsersConnectionsService;
 use Lcobucci\JWT\Builder;
@@ -49,6 +51,7 @@ class ConfigProvider
                 ServerRequestInterface::class => ServerRequestSwooleFactory::class,
                 TokenService::class => TokenServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
+                AuthService::class => AuthServiceFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [

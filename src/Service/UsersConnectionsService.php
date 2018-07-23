@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Data\User;
 use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
 use App\Http\SwooleResponseHandler;
 use App\Http\SwooleServerRequest;
+use Zend\Expressive\Authentication\UserInterface;
 
 class UsersConnectionsService
 {
     private $uidConnectionMap = [];
     private $fdIdMap = [];
 
-    public function addUserConnection(User $user, SwooleResponseHandler $response, SwooleServerRequest $request): void
+    public function addUserConnection(UserInterface $user, SwooleResponseHandler $response, SwooleServerRequest $request): void
     {
-        $uid = $user->getUid();
+        $uid = $user->getIdentity();
         $fd = $request->getFd();
         if (\array_key_exists($uid, $this->uidConnectionMap)) {
             throw new UserConnectionExistsException($uid, $fd);
@@ -27,9 +27,9 @@ class UsersConnectionsService
         $this->fdIdMap[$fd] = $uid;
     }
 
-    public function removeConnectionByUser(User $user): void
+    public function removeConnectionByUser(UserInterface $user): void
     {
-        $uid = $user->getUid();
+        $uid = $user->getIdentity();
         if (!\array_key_exists($uid, $this->uidConnectionMap)) {
             throw new UserConnectionNotExistsException($uid);
         }

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Service\AuthService;
+use Zend\Expressive\Authentication\AuthenticationInterface;
+
 return [
     // Provides application-wide services.
     // We recommend using fully-qualified class names whenever possible as
@@ -10,7 +13,7 @@ return [
         // Use 'aliases' to alias a service name to another service. The
         // key is the alias name, the value is the service to which it points.
         'aliases' => [
-            // Fully\Qualified\ClassOrInterfaceName::class => Fully\Qualified\ClassName::class,
+            AuthenticationInterface::class => AuthService::class,
         ],
         // Use 'invokables' for constructor-less services, or services that do
         // not require arguments to the constructor. Map a service name to the

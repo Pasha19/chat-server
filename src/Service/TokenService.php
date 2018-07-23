@@ -10,6 +10,7 @@ use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\ValidationData;
+use Zend\Expressive\Authentication\UserInterface;
 
 class TokenService
 {
@@ -51,7 +52,7 @@ class TokenService
         ;
     }
 
-    public function getUserByToken(string $strToken): User
+    public function getUserByToken(string $strToken): UserInterface
     {
         $token = $this->parser->parse($strToken);
         $valid = $token->validate($this->validator);
@@ -59,10 +60,7 @@ class TokenService
             throw new BadTokenException();
         }
 
-        return (new User())
-            ->setName($token->getClaim('name'))
-            ->setUid($token->getClaim('uid'))
-        ;
+        return new User($token);
     }
 
     private function getUid(string $name): string

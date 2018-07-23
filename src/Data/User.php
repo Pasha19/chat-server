@@ -4,55 +4,37 @@ declare(strict_types=1);
 
 namespace App\Data;
 
-class User
+use Lcobucci\JWT\Token;
+use Zend\Expressive\Authentication\UserInterface;
+
+class User implements UserInterface
 {
-    /**
-     * @var string
-     */
-    private $name;
+    private const ROLE = 'ROLE_CHAT_USER';
 
-    /**
-     * @var string
-     */
-    private $uid;
+    private $token;
 
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function __construct(Token $token)
     {
-        return $this->name;
+        $this->token = $token;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return User
-     */
-    public function setName(string $name): User
+    public function getIdentity(): string
     {
-        $this->name = $name;
-
-        return $this;
+        return $this->token->getClaim('uid');
     }
 
-    /**
-     * @return string
-     */
-    public function getUid(): string
+    public function getRoles(): array
     {
-        return $this->uid;
+        return [self::ROLE];
     }
 
-    /**
-     * @param string $uid
-     *
-     * @return User
-     */
-    public function setUid(string $uid): User
+    public function getDetail(string $name, $default = null)
     {
-        $this->uid = $uid;
+        return $this->token->getClaim($name, $default);
+    }
 
-        return $this;
+    public function getDetails(): array
+    {
+        return $this->token->getClaims();
     }
 }
