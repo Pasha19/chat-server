@@ -7,6 +7,7 @@ namespace App\Test\Service;
 use App\Exception\BadTokenException;
 use App\Service\AuthService;
 use App\Service\TokenService;
+use App\Test\User;
 use PHPUnit\Framework\TestCase;
 use Zend\Diactoros\ServerRequest;
 use Zend\Expressive\Authentication\UserInterface;
@@ -19,41 +20,7 @@ class AuthServiceTest extends TestCase
         $uid = \md5('uid');
         $name = 'name';
         $tokenService = $this->prophesize(TokenService::class);
-        $tokenService->getUserByToken($token)->willReturn(
-            new class($name, $uid) implements UserInterface {
-                private $name;
-                private $uid;
-
-                public function __construct(string $name, string $uid)
-                {
-                    $this->name = $name;
-                    $this->uid = $uid;
-                }
-
-                public function getIdentity(): string
-                {
-                    return $this->uid;
-                }
-
-                public function getRoles(): array
-                {
-                    return ['ROLE_TESTER'];
-                }
-
-                public function getDetail(string $name, $default = null)
-                {
-                    return $this->getDetails()[$name] ?? $default;
-                }
-
-                public function getDetails(): array
-                {
-                    return [
-                        'name' => $this->name,
-                        'uid' => $this->uid,
-                    ];
-                }
-            }
-        );
+        $tokenService->getUserByToken($token)->willReturn(new User($name, $uid));
 
         $authService = new AuthService($tokenService->reveal());
         $request = new ServerRequest(

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Action\ListenAction;
 use App\Action\RegisterAction;
 use Psr\Container\ContainerInterface;
 use Zend\Expressive\Application;
@@ -23,4 +24,5 @@ use Zend\Expressive\MiddlewareFactory;
  */
 return function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void {
     $app->post('/api/register', [BodyParamsMiddleware::class, RegisterAction::class]);
+    $app->get('/api/chat/listen', ListenAction::class);
 };

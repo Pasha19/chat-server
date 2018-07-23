@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Psr\Container\ContainerInterface;
 use Zend\Expressive\Application;
+use Zend\Expressive\Authentication\AuthenticationMiddleware;
 use Zend\Expressive\Handler\NotFoundHandler;
 use Zend\Expressive\MiddlewareFactory;
 use Zend\Expressive\Router\Middleware\DispatchMiddleware;
@@ -59,6 +60,7 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     // - route-based authentication
     // - route-based validation
     // - etc.
+    $app->pipe('/api/chat', AuthenticationMiddleware::class);
 
     // Register the dispatch middleware in the middleware pipeline
     $app->pipe(DispatchMiddleware::class);
