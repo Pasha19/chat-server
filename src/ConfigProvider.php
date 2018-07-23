@@ -8,14 +8,17 @@ use App\Action\ListenAction;
 use App\Action\PostAction;
 use App\Action\RegisterAction;
 use App\Container\AuthServiceFactory;
-use App\Container\ChatActionFactory;
 use App\Container\ErrorLoggerDelegator;
+use App\Container\ListenActionFactory;
+use App\Container\PostActionFactory;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Container\ServerRequestSwooleFactory;
 use App\Container\TokenServiceFactory;
+use App\Container\UsersConnectionsServiceFactory;
 use App\Service\AuthService;
 use App\Service\MemoryUsageService;
+use App\Service\SSESwooleEmitterService;
 use App\Service\TokenService;
 use App\Service\UsernameValidatorService;
 use App\Service\UsersConnectionsService;
@@ -47,7 +50,7 @@ class ConfigProvider
                 Parser::class,
                 ValidationData::class,
                 UsernameValidatorService::class,
-                UsersConnectionsService::class,
+                SSESwooleEmitterService::class,
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
@@ -55,8 +58,9 @@ class ConfigProvider
                 TokenService::class => TokenServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
                 AuthService::class => AuthServiceFactory::class,
-                ListenAction::class => ChatActionFactory::class,
-                PostAction::class => ChatActionFactory::class,
+                ListenAction::class => ListenActionFactory::class,
+                PostAction::class => PostActionFactory::class,
+                UsersConnectionsService::class => UsersConnectionsServiceFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [

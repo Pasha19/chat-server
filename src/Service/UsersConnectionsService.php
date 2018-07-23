@@ -15,6 +15,13 @@ class UsersConnectionsService
     private $uidConnectionMap = [];
     private $fdIdMap = [];
 
+    private $sseSwooleEmitter;
+
+    public function __construct(SSESwooleEmitterService $sseSwooleEmitterService)
+    {
+        $this->sseSwooleEmitter = $sseSwooleEmitterService;
+    }
+
     public function addUserConnection(UserInterface $user, SwooleResponseHandler $response, SwooleServerRequest $request): void
     {
         $uid = $user->getIdentity();
@@ -34,6 +41,7 @@ class UsersConnectionsService
             throw new UserConnectionNotExistsException($uid);
         }
 
+        $this->sseSwooleEmitter->end($this->uidConnectionMap[$uid]['response']);
         $fd = $this->uidConnectionMap[$uid]['fd'];
         unset($this->uidConnectionMap[$uid], $this->fdIdMap[$fd]);
     }
@@ -45,6 +53,7 @@ class UsersConnectionsService
         }
 
         $uid = $this->fdIdMap[$fd];
+        $this->sseSwooleEmitter->end($this->uidConnectionMap[$uid]['response']);
         unset($this->uidConnectionMap[$uid], $this->fdIdMap[$fd]);
     }
 

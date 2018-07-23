@@ -6,6 +6,7 @@ namespace App\Container;
 
 use App\RequestHandlerSwooleRunner;
 use App\Service\MemoryUsageService;
+use App\Service\SSESwooleEmitterService;
 use App\Service\UsersConnectionsService;
 use Interop\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -28,6 +29,7 @@ class RequestHandlerSwooleRunnerFactory implements FactoryInterface
             $container->get(ServerRequestInterface::class),
             $container->get(ServerRequestErrorResponseGenerator::class),
             $container->get(SwooleHttpServer::class),
+            $container->get(SSESwooleEmitterService::class),
             $container->get(UsersConnectionsService::class),
             $container->get(MemoryUsageService::class),
             $memoryUsageInterval

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Action;
 
-use App\Http\JsonSwooleResponse;
+use App\Http\SwooleEventStreamResponse;
 use App\Http\SwooleServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +13,7 @@ class ListenAction extends ChatAction
 {
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = new JsonSwooleResponse('in process...');
+        $response = new SwooleEventStreamResponse();
         $user = $this->getUser($request);
         $swooleRequest = $this->getSwooleRequest($request);
         $usersConnections = $this->getUsersConnections();
