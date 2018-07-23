@@ -11,7 +11,7 @@ use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\ValidationData;
 
-class AuthService
+class TokenService
 {
     private const SECONDS_IN_MONTH = 2592000;
 
@@ -36,7 +36,7 @@ class AuthService
         $this->secret = $secret;
     }
 
-    public function register(string $name): string
+    public function getTokenByName(string $name): string
     {
         $time = \time();
 

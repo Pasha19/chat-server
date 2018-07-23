@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Container;
 
-use App\Service\AuthService;
+use App\Service\TokenService;
 use Interop\Container\ContainerInterface;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
@@ -12,11 +12,11 @@ use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\ValidationData;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class AuthServiceFactory implements FactoryInterface
+class TokenServiceFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): AuthService
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): TokenService
     {
-        return new AuthService(
+        return new TokenService(
             $container->get(Builder::class),
             $container->get(Signer::class),
             $container->get(Parser::class),

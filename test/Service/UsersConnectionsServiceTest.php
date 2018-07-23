@@ -10,7 +10,9 @@ use App\Exception\UserConnectionNotExistsException;
 use App\Http\SwooleResponseHandler;
 use App\Http\SwooleServerRequest;
 use App\Service\UsersConnectionsService;
+use Lcobucci\JWT\Builder;
 use PHPUnit\Framework\TestCase;
+use Zend\Expressive\Authentication\UserInterface;
 
 class UsersConnectionsServiceTest extends TestCase
 {
@@ -58,11 +60,7 @@ class UsersConnectionsServiceTest extends TestCase
     public function testDeleteExistingUserByUser(UsersConnectionsService $usersConnections): UsersConnectionsService
     {
         $this->assertTrue(true, 'test no exception');
-        $user = new User();
-        $user
-            ->setName('User5')
-            ->setUid(\md5('5'))
-        ;
+        $user = $this->createUser(\md5('5'), 'User5');
         $usersConnections->removeConnectionByUser($user);
 
         return $usersConnections;
@@ -79,11 +77,7 @@ class UsersConnectionsServiceTest extends TestCase
     {
         $id = 5;
         $exception = false;
-        $user = new User();
-        $user
-            ->setName('User'.$id)
-            ->setUid(\md5((string) $id))
-        ;
+        $user = $this->createUser(\md5((string) $id), 'User'.$id);
         try {
             $usersConnections->removeConnectionByUser($user);
         } catch (UserConnectionNotExistsException $e) {
@@ -170,11 +164,7 @@ class UsersConnectionsServiceTest extends TestCase
 
     private function addUserConnection(UsersConnectionsService $usersConnections, int $id): UsersConnectionsService
     {
-        $user = new User();
-        $user
-            ->setName('User'.$id)
-            ->setUid(\md5((string) $id))
-        ;
+        $user = $this->createUser(\md5((string) $id), 'User'.$id);
         $response = $this->prophesize(SwooleResponseHandler::class);
         $response->getStatusCode()->willReturn($id);
         $request = $this->prophesize(SwooleServerRequest::class);
@@ -182,5 +172,19 @@ class UsersConnectionsServiceTest extends TestCase
         $usersConnections->addUserConnection($user, $response->reveal(), $request->reveal());
 
         return $usersConnections;
+    }
+
+    private function createUser(string $uid, string $name): UserInterface
+    {
+        $token = (new Builder())
+//            ->setIssuedAt($time)
+//            ->setNotBefore($time)
+//            ->setExpiration($time + self::SECONDS_IN_MONTH)
+            ->set('name', $name)
+            ->set('uid', $uid)
+            ->getToken()
+        ;
+
+        return new User($token);
     }
 }

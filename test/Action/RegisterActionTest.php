@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Test\Action;
 
 use App\Action\RegisterAction;
-use App\Service\AuthService;
+use App\Service\TokenService;
 use App\Service\UsernameValidatorService;
 use App\Test\StringStream;
 use PHPUnit\Framework\TestCase;
@@ -21,8 +21,8 @@ class RegisterActionTest extends TestCase
     {
         $name = 'Tester';
         $token = 'jwt_token';
-        $auth = $this->prophesize(AuthService::class);
-        $auth->register($name)->shouldBeCalledTimes(1)->willReturn($token);
+        $auth = $this->prophesize(TokenService::class);
+        $auth->getTokenByName($name)->shouldBeCalledTimes(1)->willReturn($token);
         $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
         $requestJson = ['name' => $name];
         $serverRequest = new ServerRequest(
@@ -47,10 +47,10 @@ class RegisterActionTest extends TestCase
 
     public function testBadRegister(): void
     {
-        $auth = $this->prophesize(AuthService::class);
+        $auth = $this->prophesize(TokenService::class);
         /** @var string $any */
         $any = Argument::any();
-        $auth->register($any)->shouldNotBeCalled();
+        $auth->getTokenByName($any)->shouldNotBeCalled();
 
         $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
         $requestJson = ['foo' => 'bar'];
@@ -74,11 +74,11 @@ class RegisterActionTest extends TestCase
 
     public function testBadName(): void
     {
-        /** @var ObjectProphecy&AuthService */
-        $auth = $this->prophesize(AuthService::class);
+        /** @var ObjectProphecy&TokenService */
+        $auth = $this->prophesize(TokenService::class);
         /** @var string $any */
         $any = Argument::any();
-        $auth->register($any)->shouldNotBeCalled();
+        $auth->getTokenByName($any)->shouldNotBeCalled();
 
         $action = new RegisterAction($auth->reveal(), new UsernameValidatorService());
         $requestJson = ['name' => 'E:123'];

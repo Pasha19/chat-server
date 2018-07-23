@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App;
 
 use App\Action\RegisterAction;
-use App\Container\AuthServiceFactory;
+use App\Container\TokenServiceFactory;
 use App\Container\ErrorLoggerDelegator;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Container\ServerRequestSwooleFactory;
-use App\Service\AuthService;
+use App\Service\TokenService;
 use App\Service\MemoryUsageService;
 use App\Service\UsernameValidatorService;
 use App\Service\UsersConnectionsService;
@@ -47,7 +47,7 @@ class ConfigProvider
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
                 ServerRequestInterface::class => ServerRequestSwooleFactory::class,
-                AuthService::class => AuthServiceFactory::class,
+                TokenService::class => TokenServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
             ],
             'delegators' => [
