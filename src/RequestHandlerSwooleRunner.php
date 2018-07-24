@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Http\SwooleEventStreamResponse;
-use App\Http\SwooleResponseHandler;
 use App\Service\MemoryUsageService;
-use App\Service\SSESwooleEmitterService;
+use App\Service\SwooleEmitterFactoryService;
 use App\Service\UsersConnectionsService;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
 use Swoole\Http\Server;
-use Zend\Expressive\Swoole\SwooleEmitter;
-use Zend\HttpHandlerRunner\Emitter\EmitterInterface;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 
 class RequestHandlerSwooleRunner extends RequestHandlerRunner
@@ -26,7 +22,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     private $serverRequestErrorResponseGenerator;
     private $serverRequestFactory;
     private $swooleHttpServer;
-    private $swooleSSEEmitter;
+    private $emitterFactory;
     private $memoryUsageService;
     private $usersConnections;
     private $memoryUsageInteval;
@@ -36,7 +32,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         callable $serverRequestFactory,
         callable $serverRequestErrorResponseGenerator,
         Server $swooleHttpServer,
-        SSESwooleEmitterService $swooleSSEEmitter,
+        SwooleEmitterFactoryService $emitterFactory,
         UsersConnectionsService $userConnections,
         MemoryUsageService $memoryUsageService,
         int $memoryUsageInterval
@@ -53,7 +49,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 \Closure::fromCallable($serverRequestErrorResponseGenerator)
         ;
         $this->swooleHttpServer = $swooleHttpServer;
-        $this->swooleSSEEmitter = $swooleSSEEmitter;
+        $this->emitterFactory = $emitterFactory;
         $this->usersConnections = $userConnections;
         $this->memoryUsageService = $memoryUsageService;
         $this->memoryUsageInteval = $memoryUsageInterval;
@@ -79,19 +75,12 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 $psr7Request = ($this->serverRequestFactory)($request);
                 $psr7Request = $psr7Request->withAttribute(self::SWOOLE_REQUEST_FD_ATTRIBUTE, $request->fd);
             } catch (\Throwable $e) {
-                $this->emitMarshalServerRequestException(new SwooleEmitter($response), $e);
+                $this->emitMarshalServerRequestException(($this->emitterFactory)(), $e);
 
                 return;
             }
             $psr7Response = $this->handler->handle($psr7Request);
-            if (!$psr7Response instanceof SwooleResponseHandler) {
-                (new SwooleEmitter($response))->emit($psr7Response);
-            } else {
-                $psr7Response->setSwooleResponse($response);
-                if ($psr7Response instanceof SwooleEventStreamResponse) {
-                    $this->swooleSSEEmitter->sendHeaders($psr7Response);
-                }
-            }
+            ($this->emitterFactory)($psr7Response, $response)->emit($psr7Response);
         });
 
         $this->swooleHttpServer->on('close', function (Server $server, int $fd): void {
@@ -108,11 +97,11 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     }
 
     private function emitMarshalServerRequestException(
-        EmitterInterface $emitter,
+        Response $swooleResponse,
         \Throwable $exception
     ): void {
         $response = ($this->serverRequestErrorResponseGenerator)($exception);
-        $emitter->emit($response);
+        ($this->emitterFactory)($response, $swooleResponse)->emit($response);
     }
 
     private function &getMemoryUsageTimer(): int

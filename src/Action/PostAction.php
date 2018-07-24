@@ -4,25 +4,13 @@ declare(strict_types=1);
 
 namespace App\Action;
 
-use App\Http\SwooleEventStreamResponse;
-use App\Http\SwooleResponseHandler;
-use App\Service\SSESwooleEmitterService;
-use App\Service\UsersConnectionsService;
+use App\SwooleEventStreamResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\JsonResponse;
 
 class PostAction extends ChatAction
 {
-    private $sseSwooleEmitter;
-
-    public function __construct(UsersConnectionsService $usersConnections, SSESwooleEmitterService $sseSwooleEmitter)
-    {
-        parent::__construct($usersConnections);
-
-        $this->sseSwooleEmitter = $sseSwooleEmitter;
-    }
-
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $json = $request->getParsedBody();
@@ -39,11 +27,8 @@ class PostAction extends ChatAction
         $user = $this->getUser($request);
         $usersConnections = $this->getUsersConnections();
         $usersConnections->walk(
-            function (SwooleResponseHandler $response) use ($message): void {
-                if (!$response instanceof SwooleEventStreamResponse) {
-                    throw new \LogicException('Bad response type');
-                }
-                $this->sseSwooleEmitter->sendMessage($response, $message);
+            function (SwooleEventStreamResponse $response) use ($message): void {
+                $response->getBody()->write($message);
                 echo $message, PHP_EOL;
             },
             $user->getIdentity()

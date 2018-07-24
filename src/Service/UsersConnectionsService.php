@@ -6,8 +6,8 @@ namespace App\Service;
 
 use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
-use App\Http\SwooleResponseHandler;
 use App\RequestHandlerSwooleRunner;
+use App\SwooleEventStreamResponse;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Authentication\UserInterface;
 
@@ -16,14 +16,7 @@ class UsersConnectionsService
     private $uidConnectionMap = [];
     private $fdIdMap = [];
 
-    private $sseSwooleEmitter;
-
-    public function __construct(SSESwooleEmitterService $sseSwooleEmitterService)
-    {
-        $this->sseSwooleEmitter = $sseSwooleEmitterService;
-    }
-
-    public function addUserConnection(UserInterface $user, SwooleResponseHandler $response, ServerRequestInterface $request): void
+    public function addUserConnection(UserInterface $user, SwooleEventStreamResponse $response, ServerRequestInterface $request): void
     {
         $uid = $user->getIdentity();
         $fd = $request->getAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, null);
@@ -45,7 +38,7 @@ class UsersConnectionsService
             throw new UserConnectionNotExistsException($uid);
         }
 
-        $this->sseSwooleEmitter->end($this->uidConnectionMap[$uid]['response']);
+        $this->end($this->uidConnectionMap[$uid]['response']);
         $fd = $this->uidConnectionMap[$uid]['fd'];
         unset($this->uidConnectionMap[$uid], $this->fdIdMap[$fd]);
     }
@@ -57,7 +50,7 @@ class UsersConnectionsService
         }
 
         $uid = $this->fdIdMap[$fd];
-        $this->sseSwooleEmitter->end($this->uidConnectionMap[$uid]['response']);
+        $this->end($this->uidConnectionMap[$uid]['response']);
         unset($this->uidConnectionMap[$uid], $this->fdIdMap[$fd]);
     }
 
@@ -70,5 +63,10 @@ class UsersConnectionsService
 
             $callback($data['response']);
         }
+    }
+
+    private function end(SwooleEventStreamResponse $response): void
+    {
+        $response->getBody()->close();
     }
 }

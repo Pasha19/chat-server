@@ -6,21 +6,19 @@ namespace App\Test\Service;
 
 use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
-use App\Http\SwooleEventStreamResponse;
-use App\Http\SwooleResponseHandler;
 use App\RequestHandlerSwooleRunner;
-use App\Service\SSESwooleEmitterService;
 use App\Service\UsersConnectionsService;
+use App\SwooleEventStreamResponse;
 use App\Test\User;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\ServerRequest;
 
 class UsersConnectionsServiceTest extends TestCase
 {
     public function testAddNewConnection(): UsersConnectionsService
     {
-        $sseSwooleEmitter = $this->prophesize(SSESwooleEmitterService::class);
-        $usersConnections = new UsersConnectionsService($sseSwooleEmitter->reveal());
+        $usersConnections = new UsersConnectionsService();
         for ($i = 1; $i <= 5; ++$i) {
             $this->addUserConnection($usersConnections, $i);
         }
@@ -134,7 +132,7 @@ class UsersConnectionsServiceTest extends TestCase
     {
         $i = 1;
         $usersConnections->walk(
-            function (SwooleResponseHandler $response) use (&$i): void {
+            function (SwooleEventStreamResponse $response) use (&$i): void {
                 $this->assertSame(++$i, $response->getStatusCode());
             }
         );
@@ -154,7 +152,7 @@ class UsersConnectionsServiceTest extends TestCase
     {
         $i = 1;
         $usersConnections->walk(
-            function (SwooleResponseHandler $response) use (&$i): void {
+            function (SwooleEventStreamResponse $response) use (&$i): void {
                 $this->assertSame(++$i, $response->getStatusCode());
             },
             \md5('4')
@@ -167,8 +165,10 @@ class UsersConnectionsServiceTest extends TestCase
     private function addUserConnection(UsersConnectionsService $usersConnections, int $id): UsersConnectionsService
     {
         $user = new User('User'.$id, \md5((string) $id));
+        $stream = $this->prophesize(StreamInterface::class);
         $response = $this->prophesize(SwooleEventStreamResponse::class);
         $response->getStatusCode()->willReturn($id);
+        $response->getBody()->willReturn($stream->reveal());
         $request = new ServerRequest();
         $request = $request->withAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, $id);
         $usersConnections->addUserConnection($user, $response->reveal(), $request);
