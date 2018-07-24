@@ -6,10 +6,10 @@ namespace App;
 
 use App\Http\SwooleEventStreamResponse;
 use App\Http\SwooleResponseHandler;
-use App\Http\SwooleServerRequest;
 use App\Service\MemoryUsageService;
 use App\Service\SSESwooleEmitterService;
 use App\Service\UsersConnectionsService;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Swoole\Http\Request;
 use Swoole\Http\Response;
@@ -20,6 +20,8 @@ use Zend\HttpHandlerRunner\RequestHandlerRunner;
 
 class RequestHandlerSwooleRunner extends RequestHandlerRunner
 {
+    public const SWOOLE_REQUEST_FD_ATTRIBUTE = 'SWOOLE_REQUEST_FD_ATTRIBUTE';
+
     private $handler;
     private $serverRequestErrorResponseGenerator;
     private $serverRequestFactory;
@@ -73,9 +75,9 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
                 PHP_EOL
             );
             try {
-                /** @var SwooleServerRequest $psr7Request */
+                /** @var ServerRequestInterface $psr7Request */
                 $psr7Request = ($this->serverRequestFactory)($request);
-                $psr7Request->setFd($request->fd);
+                $psr7Request = $psr7Request->withAttribute(self::SWOOLE_REQUEST_FD_ATTRIBUTE, $request->fd);
             } catch (\Throwable $e) {
                 $this->emitMarshalServerRequestException(new SwooleEmitter($response), $e);
 

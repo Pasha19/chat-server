@@ -13,7 +13,6 @@ use App\Container\ListenActionFactory;
 use App\Container\PostActionFactory;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
-use App\Container\ServerRequestSwooleFactory;
 use App\Container\TokenServiceFactory;
 use App\Container\UsersConnectionsServiceFactory;
 use App\Service\AuthService;
@@ -27,7 +26,6 @@ use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\ValidationData;
-use Psr\Http\Message\ServerRequestInterface;
 use Zend\HttpHandlerRunner\RequestHandlerRunner;
 use Zend\Stratigility\Middleware\ErrorHandler;
 
@@ -54,7 +52,6 @@ class ConfigProvider
             ],
             'factories' => [
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
-                ServerRequestInterface::class => ServerRequestSwooleFactory::class,
                 TokenService::class => TokenServiceFactory::class,
                 RegisterAction::class => RegisterActionFactory::class,
                 AuthService::class => AuthServiceFactory::class,

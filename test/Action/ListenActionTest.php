@@ -7,6 +7,7 @@ namespace App\Test\Action;
 use App\Action\ListenAction;
 use App\Http\SwooleResponseHandler;
 use App\Http\SwooleServerRequest;
+use App\RequestHandlerSwooleRunner;
 use App\Service\UsersConnectionsService;
 use App\Test\User;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +22,8 @@ class ListenActionTest extends TestCase
     {
         $user = new User('name', \md5('uid'));
 
-        $request = new SwooleServerRequest();
+        $request = new ServerRequest();
+        $request->withAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, 1);
         $request = $request->withAttribute(UserInterface::class, $user);
         /** @var SwooleResponseHandler $response */
         $response = Argument::type(SwooleResponseHandler::class);
@@ -57,8 +59,8 @@ class ListenActionTest extends TestCase
     public function dataProvider(): array
     {
         return [
-            'No auth user' => [new SwooleServerRequest()],
-            'Wrong type' => [new ServerRequest()],
+            'No auth user' => [(new ServerRequest())->withAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, 1)],
+            'No fd' => [new ServerRequest()],
         ];
     }
 }

@@ -64,8 +64,7 @@ class TokenService
             throw new BadTokenException();
         }
 
-        return new class($token) implements UserInterface
-        {
+        return new class($token) implements UserInterface {
             private const ROLE = 'ROLE_CHAT_USER';
 
             private $token;

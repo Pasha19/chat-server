@@ -7,7 +7,8 @@ namespace App\Service;
 use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
 use App\Http\SwooleResponseHandler;
-use App\Http\SwooleServerRequest;
+use App\RequestHandlerSwooleRunner;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\Expressive\Authentication\UserInterface;
 
 class UsersConnectionsService
@@ -22,10 +23,13 @@ class UsersConnectionsService
         $this->sseSwooleEmitter = $sseSwooleEmitterService;
     }
 
-    public function addUserConnection(UserInterface $user, SwooleResponseHandler $response, SwooleServerRequest $request): void
+    public function addUserConnection(UserInterface $user, SwooleResponseHandler $response, ServerRequestInterface $request): void
     {
         $uid = $user->getIdentity();
-        $fd = $request->getFd();
+        $fd = $request->getAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, null);
+        if ($fd === null) {
+            throw new \LogicException(\sprintf('Request attribute "%s" not exists', RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE));
+        }
         if (\array_key_exists($uid, $this->uidConnectionMap)) {
             throw new UserConnectionExistsException($uid, $fd);
         }
