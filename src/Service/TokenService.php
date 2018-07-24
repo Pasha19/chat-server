@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Data\User;
 use App\Exception\BadTokenException;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\Signer;
+use Lcobucci\JWT\Token;
 use Lcobucci\JWT\ValidationData;
 use Zend\Expressive\Authentication\UserInterface;
 
@@ -64,7 +64,37 @@ class TokenService
             throw new BadTokenException();
         }
 
-        return new User($token);
+        return new class($token) implements UserInterface
+        {
+            private const ROLE = 'ROLE_CHAT_USER';
+
+            private $token;
+
+            public function __construct(Token $token)
+            {
+                $this->token = $token;
+            }
+
+            public function getIdentity(): string
+            {
+                return $this->token->getClaim('uid');
+            }
+
+            public function getRoles(): array
+            {
+                return [self::ROLE];
+            }
+
+            public function getDetail(string $name, $default = null)
+            {
+                return $this->token->getClaim($name, $default);
+            }
+
+            public function getDetails(): array
+            {
+                return $this->token->getClaims();
+            }
+        };
     }
 
     private function getUid(string $name): string
