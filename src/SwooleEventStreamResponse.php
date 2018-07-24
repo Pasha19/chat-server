@@ -11,7 +11,7 @@ use Zend\Diactoros\Response;
 class SwooleEventStreamResponse extends Response
 {
     private const PREDEFINED_HEADERS = [
-        'Content-Type' => 'application/event-stream',
+        'Content-Type' => 'text/event-stream',
         'X-Accel-Buffering' => 'no',
     ];
 

@@ -26,10 +26,25 @@ class PostAction extends ChatAction
         $message = $json['message'];
         $user = $this->getUser($request);
         $usersConnections = $this->getUsersConnections();
+        $time = \date('Y-m-d H:i:sO');
         $usersConnections->walk(
-            function (SwooleEventStreamResponse $response) use ($message): void {
-                $response->getBody()->write($message);
-                echo $message, PHP_EOL;
+            function (SwooleEventStreamResponse $response) use ($message, $user, $time): void {
+                $data = [
+                    'event' => 'message',
+                    'data' => [
+                        'user' => [
+                            'uid' => $user->getIdentity(),
+                            'name' => $user->getDetail('name'),
+                        ],
+                        'message' => $message,
+                        'time' => $time,
+                    ],
+                ];
+                $json = @\json_encode($data);
+                if ($json === false) {
+                    throw new \LogicException(\json_last_error_msg());
+                }
+                $response->getBody()->write($json);
             },
             $user->getIdentity()
         );
