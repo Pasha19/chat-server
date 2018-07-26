@@ -52,7 +52,7 @@ class PostAction extends ChatAction
         return new JsonResponse([
             'status' => 'success',
             'data' => [
-                'send' => 'ok',
+                'time' => $time,
             ],
         ]);
     }
