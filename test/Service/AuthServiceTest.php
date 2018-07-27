@@ -30,7 +30,7 @@ class AuthServiceTest extends TestCase
             null,
             'php://memory',
             [
-                'Authorization' => $token,
+                'Authorization' => "Bearer $token",
             ]
         );
         /** @var UserInterface $user */

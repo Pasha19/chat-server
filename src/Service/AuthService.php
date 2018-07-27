@@ -24,9 +24,14 @@ class AuthService implements AuthenticationInterface
         if (!$request->hasHeader('Authorization')) {
             return null;
         }
+        $authorization = $request->getHeader('Authorization')[0];
+        if (\mb_strpos($authorization, 'Bearer ') !== 0) {
+            return null;
+        }
+        $authorization = \mb_substr($authorization, \mb_strlen('Bearer '));
 
         try {
-            return $this->tokenService->getUserByToken($request->getHeader('Authorization')[0]);
+            return $this->tokenService->getUserByToken($authorization);
         } catch (\Throwable $e) {
             // TODO: log or path auth error
             return null;
