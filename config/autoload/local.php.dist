@@ -10,4 +10,14 @@ declare(strict_types=1);
 
 return [
     'app_secret' => 'put your secret here',
+    'zend-expressive-swoole' => [
+        'swoole-http-server' => [
+            'host' => '127.0.0.1',
+            'port' => 8000,
+        ],
+    ],
+    'app_cors' => [
+        'Access-Control-Allow-Origin' => 'http://127.0.0.1:3000',
+        'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
+    ],
 ];
