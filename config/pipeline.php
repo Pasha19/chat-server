@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Zend\Expressive\Application;
 use Zend\Expressive\Authentication\AuthenticationMiddleware;
 use Zend\Expressive\Handler\NotFoundHandler;
@@ -39,6 +42,21 @@ return function (Application $app, MiddlewareFactory $factory, ContainerInterfac
     // - $app->pipe('/api', $apiMiddleware);
     // - $app->pipe('/docs', $apiDocMiddleware);
     // - $app->pipe('/files', $filesMiddleware);
+    $cors = $container->get('config')['app_cors'] ?? [];
+    if ($cors !== []) {
+        $app->pipe(
+            function (ServerRequestInterface $request, RequestHandlerInterface $handler) use ($cors): ResponseInterface {
+                $response = $handler->handle($request);
+                foreach ($cors as $header => $value) {
+                    if (!$response->hasHeader($header)) {
+                        $response = $response->withHeader($header, $value);
+                    }
+                }
+
+                return $response;
+            }
+        );
+    }
 
     // Register the routing middleware in the middleware pipeline.
     // This middleware registers the Zend\Expressive\Router\RouteResult request attribute.
