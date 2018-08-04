@@ -16,14 +16,8 @@ use Zend\ServiceManager\Factory\FactoryInterface;
 
 class RequestHandlerSwooleRunnerFactory implements FactoryInterface
 {
-    private const DEFAULT_MEMORY_USAGE_TIMEOUT = 10000;
-
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): RequestHandlerSwooleRunner
     {
-        $config = $container->get('config');
-        $debug = $config['debug'] ?? false;
-        $memoryUsageInterval = $config['app_memory_usage_interval'] ?? ($debug ? self::DEFAULT_MEMORY_USAGE_TIMEOUT : 0);
-
         return new RequestHandlerSwooleRunner(
             $container->get('Zend\Expressive\ApplicationPipeline'),
             $container->get(ServerRequestInterface::class),
@@ -32,7 +26,7 @@ class RequestHandlerSwooleRunnerFactory implements FactoryInterface
             $container->get(SwooleEmitterFactoryService::class),
             $container->get(UsersConnectionsService::class),
             $container->get(MemoryUsageService::class),
-            $memoryUsageInterval
+            $container->get('config')['app_memory_usage_interval'] ?? 0
         );
     }
 }
