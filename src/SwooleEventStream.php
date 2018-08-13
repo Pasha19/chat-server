@@ -71,7 +71,6 @@ class SwooleEventStream implements StreamInterface
 
     public function write($string): int
     {
-        $string = $this->prepareString($string);
         $bytes = \mb_strlen($string, '8bit');
         if ($this->swooleResponse === null) {
             $buffer[] = $string;
@@ -107,20 +106,6 @@ class SwooleEventStream implements StreamInterface
         while ($this->buffer !== []) {
             $this->doWrite(\array_pop($this->buffer));
         }
-    }
-
-    private function prepareString(string $string): string
-    {
-        $string = \str_replace(["\r\n", "\r"], "\n", $string);
-        $parts = \explode("\n", $string);
-        $parts = \array_map(
-            function (string $s): string {
-                return 'data: '.\trim($s);
-            },
-            $parts
-        );
-
-        return \implode("\n", $parts)."\n\n";
     }
 
     private function doWrite(string $string): void

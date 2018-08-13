@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Test\Action;
 
 use App\Action\PostAction;
+use App\Service\EventStreamFormatterService;
 use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use App\Test\StringStream;
@@ -38,16 +39,23 @@ class PostActionTest extends TestCase
         $request = $request->withAttribute(UserInterface::class, $user);
         $self = $this;
 
-        $stream = $this->prophesize(StreamInterface::class);
-        /** @var string $string */
-        $string = Argument::type('string');
-        $stream->write($string)
-            ->will(function (array $args) use ($self, $requestJson, $user): void {
-                $self::assertJson($args[0]);
+        $eventStreamFormatter = $this->prophesize(EventStreamFormatterService::class);
+        /** @var array $array */
+        $array = Argument::type('array');
+        $eventStreamMessage = '';
+        $eventStreamFormatter
+            ->getEventStreamMessage($array)
+            ->will(function (array $args) use ($self, $requestJson, $user, &$eventStreamMessage): string {
+                $message = $args[0];
 
-                $data = \json_decode($args[0], true);
-                $self::assertArrayHasKey('event', $data);
-                $self::assertSame('message', $data['event']);
+                $self::assertArrayHasKey('event', $message);
+                $self::assertSame('post', $message['event']);
+
+                $self::assertArrayHasKey('data', $message);
+                $self::assertJson($message['data']);
+                $data = \json_decode($message['data'], true);
+                $self::assertArrayHasKey('status', $data);
+                $self::assertSame('success', $data['status']);
 
                 $self::assertArrayHasKey('data', $data);
                 $data = $data['data'];
@@ -62,17 +70,36 @@ class PostActionTest extends TestCase
                 $self::assertSame($user->getDetail('name'), $userData['name']);
                 $self::assertArrayHasKey('uid', $userData);
                 $self::assertSame($user->getIdentity(), $userData['uid']);
+
+                $self::assertArrayNotHasKey('id', $message);
+
+                $result = "event: {$message['event']}\ndata: ".\json_encode($message['data'])."\n\n";
+                $eventStreamMessage = $result;
+
+                return $result;
+            })
+            ->shouldBeCalledOnce()
+        ;
+
+        $stream = $this->prophesize(StreamInterface::class);
+        /** @var string $string */
+        $string = Argument::type('string');
+        $stream
+            ->write($string)
+            ->will(function (array $args) use ($self, &$eventStreamMessage): void {
+                $self::assertSame($eventStreamMessage, $args[0]);
             })
             ->shouldBeCalledOnce()
         ;
 
         $swooleEventStreamResponse = $this->prophesize(SwooleEventStreamResponse::class);
-        $swooleEventStreamResponse->getBody()->willReturn($stream);
+        $swooleEventStreamResponse->getBody()->willReturn($stream->reveal());
 
         $usersConnections = $this->prophesize(UsersConnectionsService::class);
         /** @var \Closure $closure */
         $closure = Argument::type(\Closure::class);
-        $usersConnections->walk($closure, $uid)
+        $usersConnections
+            ->walk($closure, $uid)
             ->will(
                 function (array $args) use ($self, $uid, $swooleEventStreamResponse): void {
                     $self::assertSame($uid, $args[1]);
@@ -82,6 +109,6 @@ class PostActionTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        (new PostAction($usersConnections->reveal()))->handle($request);
+        (new PostAction($usersConnections->reveal(), $eventStreamFormatter->reveal()))->handle($request);
     }
 }

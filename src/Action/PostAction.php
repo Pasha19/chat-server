@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Action;
 
+use App\Service\EventStreamFormatterService;
+use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,6 +13,15 @@ use Zend\Diactoros\Response\JsonResponse;
 
 class PostAction extends ChatAction
 {
+    private $eventStreamFormatter;
+
+    public function __construct(UsersConnectionsService $usersConnections, EventStreamFormatterService $eventStreamFormatter)
+    {
+        parent::__construct($usersConnections);
+
+        $this->eventStreamFormatter = $eventStreamFormatter;
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $json = $request->getParsedBody();
@@ -30,7 +41,7 @@ class PostAction extends ChatAction
         $usersConnections->walk(
             function (SwooleEventStreamResponse $response) use ($message, $user, $time): void {
                 $data = [
-                    'event' => 'message',
+                    'status' => 'success',
                     'data' => [
                         'user' => [
                             'uid' => $user->getIdentity(),
@@ -44,7 +55,11 @@ class PostAction extends ChatAction
                 if ($json === false) {
                     throw new \LogicException(\json_last_error_msg());
                 }
-                $response->getBody()->write($json);
+                $eventStreamMessage = $this->eventStreamFormatter->getEventStreamMessage([
+                    'event' => 'post',
+                    'data' => $json,
+                ]);
+                $response->getBody()->write($eventStreamMessage);
             },
             $user->getIdentity()
         );
