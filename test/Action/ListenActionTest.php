@@ -25,7 +25,7 @@ class ListenActionTest extends TestCase
         $request = $request
             ->withAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, 1)
             ->withAttribute(UserInterface::class, $user)
-    ;
+        ;
         /** @var SwooleEventStreamResponse $response */
         $response = Argument::type(SwooleEventStreamResponse::class);
         $usersConnections = $this->prophesize(UsersConnectionsService::class);
