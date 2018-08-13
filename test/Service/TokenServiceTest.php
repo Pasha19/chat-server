@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Test\Service;
 
+use App\Exception\BadTokenException;
 use App\Service\TokenService;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
@@ -55,20 +56,18 @@ class TokenServiceTest extends TestCase
         return $strToken;
     }
 
-    /**
-     * @expectedException \App\Exception\BadTokenException
-     */
     public function testExpiredToken(): void
     {
+        $this->expectException(BadTokenException::class);
+
         $strToken = $this->tokenService->getTokenByName(self::USER_NAME, -1);
         $this->tokenService->getUserByToken($strToken);
     }
 
-    /**
-     * @expectedException \OutOfBoundsException
-     */
     public function testTokenWithoutNameAndUid(): void
     {
+        $this->expectException(\OutOfBoundsException::class);
+
         $time = \time();
         $token = (string) (new Builder())
             ->setIssuedAt($time)

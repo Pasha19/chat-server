@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Test\Service;
 
+use App\Exception\EventStreamException;
 use App\Service\EventStreamFormatterService;
 use PHPUnit\Framework\TestCase;
 
@@ -20,11 +21,10 @@ class EventStreamFormatterServiceTest extends TestCase
         $this->assertSame("event: test\ndata: str\ndata: str2\ndata: str3\ndata: str4\nid: id\n\n", $result);
     }
 
-    /**
-     * @expectedException \App\Exception\EventStreamException
-     */
     public function testGetEventStreamMessageWithoutData(): void
     {
+        $this->expectException(EventStreamException::class);
+
         $eventStreamFormatter = new EventStreamFormatterService();
         $eventStreamFormatter->getEventStreamMessage([
             'event' => 'test',

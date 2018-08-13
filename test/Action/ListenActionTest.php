@@ -37,12 +37,12 @@ class ListenActionTest extends TestCase
     /**
      * @dataProvider dataProvider
      *
-     * @expectedException \LogicException
-     *
      * @param ServerRequestInterface $serverRequest
      */
     public function testHandleError(ServerRequestInterface $serverRequest): void
     {
+        $this->expectException(\LogicException::class);
+
         $usersConnections = $this->prophesize(UsersConnectionsService::class);
         /** @var UserInterface $user */
         $user = Argument::any();
