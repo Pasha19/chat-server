@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\Service;
 
-use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
 use App\RequestHandlerSwooleRunner;
 use App\Service\UsersConnectionsService;
@@ -38,14 +37,8 @@ class UsersConnectionsServiceTest extends TestCase
     public function testAddExistingUser(UsersConnectionsService $usersConnections): UsersConnectionsService
     {
         $id = 1;
-        $exception = false;
-        try {
-            $this->addUserConnection($usersConnections, $id);
-        } catch (UserConnectionExistsException $e) {
-            $this->assertSame(\sprintf('Connection for uid "%s" already exists. fd: %d', \md5((string) $id), $id), $e->getMessage());
-            $exception = true;
-        }
-        $this->assertTrue($exception);
+        $this->addUserConnection($usersConnections, $id);
+        $this->assertTrue(true, 'test no exception');
 
         return $usersConnections;
     }

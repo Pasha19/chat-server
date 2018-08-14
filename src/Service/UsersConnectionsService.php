@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Exception\UserConnectionExistsException;
 use App\Exception\UserConnectionNotExistsException;
 use App\RequestHandlerSwooleRunner;
 use App\SwooleEventStreamResponse;
@@ -24,7 +23,7 @@ class UsersConnectionsService
             throw new \LogicException(\sprintf('Request attribute "%s" not exists', RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE));
         }
         if (\array_key_exists($uid, $this->uidConnectionMap)) {
-            throw new UserConnectionExistsException($uid, $fd);
+            $this->removeConnectionByUser($user);
         }
 
         $this->uidConnectionMap[$uid] = ['response' => $response, 'fd' => $fd];
