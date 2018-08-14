@@ -14,6 +14,7 @@ use App\Container\PostActionFactory;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Container\TokenServiceFactory;
+use App\Container\UserConnectionsServiceFactory;
 use App\Service\AuthService;
 use App\Service\EventStreamFormatterService;
 use App\Service\MemoryUsageService;
@@ -49,7 +50,6 @@ class ConfigProvider
                 ValidationData::class,
                 UsernameValidatorService::class,
                 SwooleEmitterFactoryService::class,
-                UsersConnectionsService::class,
                 EventStreamFormatterService::class,
             ],
             'factories' => [
@@ -59,6 +59,7 @@ class ConfigProvider
                 AuthService::class => AuthServiceFactory::class,
                 ListenAction::class => ListenActionFactory::class,
                 PostAction::class => PostActionFactory::class,
+                UsersConnectionsService::class => UserConnectionsServiceFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [

@@ -73,7 +73,7 @@ class SwooleEventStream implements StreamInterface
     {
         $bytes = \mb_strlen($string, '8bit');
         if ($this->swooleResponse === null) {
-            $buffer[] = $string;
+            $this->buffer[] = $string;
         } else {
             $this->doWrite($string);
         }

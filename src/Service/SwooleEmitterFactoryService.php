@@ -33,13 +33,14 @@ class SwooleEmitterFactoryService
                         \sprintf('Expected response to be "%s", "%s" given', SwooleEventStreamResponse::class, \get_class($response))
                     );
                 }
-                $response->setSwooleResponse($this->swooleResponse);
 
                 $this->swooleResponse->status($response->getStatusCode());
                 foreach ($response->getHeaders() as $name => $values) {
                     $name = $this->filterHeader($name);
                     $this->swooleResponse->header($name, \implode(', ', $values));
                 }
+                // todo: fix sending response before headers
+                $response->setSwooleResponse($this->swooleResponse);
 
                 return true;
             }
