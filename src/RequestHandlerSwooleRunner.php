@@ -25,7 +25,10 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
     private $emitterFactory;
     private $memoryUsageService;
     private $usersConnections;
-    private $memoryUsageInteval;
+    private $monitoringInteval;
+
+    private $activeConnections = 0;
+    private $maxActiveConnections = 0;
 
     public function __construct(
         RequestHandlerInterface $handler,
@@ -35,7 +38,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         SwooleEmitterFactoryService $emitterFactory,
         UsersConnectionsService $userConnections,
         MemoryUsageService $memoryUsageService,
-        int $memoryUsageInterval
+        int $monitoringInterval
     ) {
         $this->handler = $handler;
         $this->serverRequestFactory = \is_object($serverRequestFactory) && $serverRequestFactory instanceof \Closure ?
@@ -52,7 +55,7 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         $this->emitterFactory = $emitterFactory;
         $this->usersConnections = $userConnections;
         $this->memoryUsageService = $memoryUsageService;
-        $this->memoryUsageInteval = $memoryUsageInterval;
+        $this->monitoringInteval = $monitoringInterval;
     }
 
     public function run(): void
@@ -62,6 +65,11 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         });
 
         $this->swooleHttpServer->on('request', function (Request $request, Response $response): void {
+            ++$this->activeConnections;
+            if ($this->activeConnections > $this->maxActiveConnections) {
+                $this->maxActiveConnections = $this->activeConnections;
+            }
+
             \printf(
                 '[%s] - %s - %s %s%s',
                 \date('Y-m-d H:i:sO'),
@@ -84,10 +92,12 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         });
 
         $this->swooleHttpServer->on('close', function (Server $server, int $fd): void {
+            \assert($this->activeConnections > 0);
+            --$this->activeConnections;
             $this->usersConnections->removeConnectionByFd($fd);
         });
 
-        $timerId = $this->getMemoryUsageTimer();
+        $timerId = $this->getMonitoringTimer();
 
         $this->swooleHttpServer->start();
 
@@ -104,25 +114,55 @@ class RequestHandlerSwooleRunner extends RequestHandlerRunner
         ($this->emitterFactory)($response, $swooleResponse)->emit($response);
     }
 
-    private function &getMemoryUsageTimer(): int
+    private function &getMonitoringTimer(): int
     {
         $timerId = 0;
-        if ($this->memoryUsageInteval > 0) {
-            $this->swooleHttpServer->on('workerStart', function () use (&$timerId): void {
-                $timerId = $this->swooleHttpServer->tick($this->memoryUsageInteval, function (): void {
+        if ($this->monitoringInteval > 0) {
+            $startedAt = new \DateTime();
+            $this->swooleHttpServer->on('workerStart', function () use (&$timerId, $startedAt): void {
+                $timerId = $this->swooleHttpServer->tick($this->monitoringInteval, function () use ($startedAt): void {
+                    $now = new \DateTime();
+                    $date = $now->format('Y-m-d H:i:sO');
                     ($this->memoryUsageService)();
-                    \printf(
-                        '[%s] - Memory usage: %.3f MiB (%+.3f MiB) Peek usage: %.3f MiB%s',
-                        \date('Y-m-d H:i:sO'),
-                        $this->memoryUsageService->getMemoryUsed(),
-                        $this->memoryUsageService->getMemoryDiff(),
-                        $this->memoryUsageService->getMemoryPeek(),
-                        PHP_EOL
+                    echo \implode(
+                        PHP_EOL,
+                        [
+                            $this->getUptimeString($date, $startedAt, $now),
+                            $this->getConnectionsString($date),
+                            $this->getMemoryUsageString($date),
+                            '',
+                        ]
                     );
                 });
             });
         }
 
         return $timerId;
+    }
+
+    private function getMemoryUsageString(string $date): string
+    {
+        return \sprintf('[%s] - Memory usage: %.3f MiB (%+.3f MiB) Peek usage: %.3f MiB',
+            $date,
+            $this->memoryUsageService->getMemoryUsed(),
+            $this->memoryUsageService->getMemoryDiff(),
+            $this->memoryUsageService->getMemoryPeek()
+        );
+    }
+
+    private function getConnectionsString(string $date): string
+    {
+        return \sprintf(
+            '[%s] - Connections: %d Max Connections: %d',
+            $date, $this->activeConnections,
+            $this->maxActiveConnections
+        );
+    }
+
+    private function getUptimeString(string $date, \DateTimeInterface $start, \DateTimeInterface $now): string
+    {
+        $uptime = $now->diff($start);
+
+        return \sprintf('[%s] - Uptime %s', $date, $uptime->format('%a day(s) %h:%i:%s'));
     }
 }

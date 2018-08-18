@@ -26,7 +26,7 @@ class RequestHandlerSwooleRunnerFactory implements FactoryInterface
             $container->get(SwooleEmitterFactoryService::class),
             $container->get(UsersConnectionsService::class),
             $container->get(MemoryUsageService::class),
-            $container->get('config')['app_memory_usage_interval'] ?? 0
+            $container->get('config')['app_monitoring_interval'] ?? 0
         );
     }
 }
