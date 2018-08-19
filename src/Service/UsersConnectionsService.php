@@ -65,7 +65,6 @@ class UsersConnectionsService
         }
 
         $uid = $this->fdIdMap[$fd];
-        $this->end($this->uidConnectionMap[$uid]['response']);
         unset($this->uidConnectionMap[$uid], $this->fdIdMap[$fd]);
     }
 
