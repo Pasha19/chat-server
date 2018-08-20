@@ -71,7 +71,8 @@ class PostActionTest extends TestCase
                 $self::assertArrayHasKey('uid', $userData);
                 $self::assertSame($user->getIdentity(), $userData['uid']);
 
-                $self::assertArrayNotHasKey('id', $message);
+                $self::assertArrayHasKey('id', $message);
+                $self::assertInternalType('string', $message['id']);
 
                 $result = "event: {$message['event']}\ndata: ".\json_encode($message['data'])."\n\n";
                 $eventStreamMessage = $result;

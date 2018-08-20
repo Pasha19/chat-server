@@ -10,10 +10,12 @@ use App\SwooleEventStreamResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\JsonResponse;
+use Zend\Expressive\Authentication\UserInterface;
 
 class PostAction extends ChatAction
 {
     private $eventStreamFormatter;
+    private $inc = 0;
 
     public function __construct(UsersConnectionsService $usersConnections, EventStreamFormatterService $eventStreamFormatter)
     {
@@ -36,20 +38,24 @@ class PostAction extends ChatAction
         }
         $message = $json['message'];
         $user = $this->getUser($request);
-        $usersConnections = $this->getUsersConnections();
+        $id = $this->getMid($user);
         $time = \date('Y-m-d H:i:sO');
+        $message = [
+            'user' => [
+                'uid' => $user->getIdentity(),
+                'name' => $user->getDetail('name'),
+            ],
+            'message' => $message,
+            'time' => $time,
+            'id' => $id,
+        ];
+
+        $usersConnections = $this->getUsersConnections();
         $usersConnections->walk(
-            function (SwooleEventStreamResponse $response) use ($message, $user, $time): void {
+            function (SwooleEventStreamResponse $response) use ($message): void {
                 $data = [
                     'status' => 'success',
-                    'data' => [
-                        'user' => [
-                            'uid' => $user->getIdentity(),
-                            'name' => $user->getDetail('name'),
-                        ],
-                        'message' => $message,
-                        'time' => $time,
-                    ],
+                    'data' => $message,
                 ];
                 $json = @\json_encode($data);
                 if ($json === false) {
@@ -58,6 +64,7 @@ class PostAction extends ChatAction
                 $eventStreamMessage = $this->eventStreamFormatter->getEventStreamMessage([
                     'event' => 'post',
                     'data' => $json,
+                    'id' => $message['id'],
                 ]);
                 $response->getBody()->write($eventStreamMessage);
             },
@@ -70,5 +77,10 @@ class PostAction extends ChatAction
                 'time' => $time,
             ],
         ]);
+    }
+
+    private function getMid(UserInterface $user): string
+    {
+        return \md5(\sprintf('%d:%s:%s', ++$this->inc, $user->getIdentity(), \microtime()));
     }
 }
