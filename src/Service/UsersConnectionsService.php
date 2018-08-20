@@ -16,13 +16,6 @@ class UsersConnectionsService
     private $uidConnectionMap = [];
     private $fdIdMap = [];
 
-    private $eventStreamFormatter;
-
-    public function __construct(EventStreamFormatterService $eventStreamFormatter)
-    {
-        $this->eventStreamFormatter = $eventStreamFormatter;
-    }
-
     public function addUserConnection(UserInterface $user, SwooleEventStreamResponse $response, ServerRequestInterface $request): void
     {
         $uid = $user->getIdentity();
@@ -36,14 +29,6 @@ class UsersConnectionsService
 
         $this->uidConnectionMap[$uid] = ['response' => $response, 'fd' => $fd];
         $this->fdIdMap[$fd] = $uid;
-
-        $response->getBody()->write($this->eventStreamFormatter->getEventStreamMessage([
-            'event' => 'connect',
-            'data' => \json_encode([
-                'status' => 'success',
-                'data' => [],
-            ]),
-        ]));
     }
 
     public function removeConnectionByUser(UserInterface $user): void

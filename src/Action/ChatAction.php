@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Action;
 
+use App\Service\EventStreamFormatterService;
+use App\Service\MessageStorageService;
 use App\Service\UsersConnectionsService;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -11,11 +13,18 @@ use Zend\Expressive\Authentication\UserInterface;
 
 abstract class ChatAction implements RequestHandlerInterface
 {
-    private $usersConnection;
+    protected $usersConnections;
+    protected $messagesStorage;
+    protected $eventStreamFormatter;
 
-    public function __construct(UsersConnectionsService $usersConnections)
-    {
-        $this->usersConnection = $usersConnections;
+    public function __construct(
+        UsersConnectionsService $usersConnections,
+        MessageStorageService $messageStorage,
+        EventStreamFormatterService $eventStreamFormatter
+    ) {
+        $this->usersConnections = $usersConnections;
+        $this->messagesStorage = $messageStorage;
+        $this->eventStreamFormatter = $eventStreamFormatter;
     }
 
     protected function getUser(ServerRequestInterface $request): UserInterface
@@ -26,10 +35,5 @@ abstract class ChatAction implements RequestHandlerInterface
         }
 
         return $user;
-    }
-
-    protected function getUsersConnections(): UsersConnectionsService
-    {
-        return $this->usersConnection;
     }
 }

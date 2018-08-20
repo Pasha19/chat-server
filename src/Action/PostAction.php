@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Action;
 
-use App\Service\EventStreamFormatterService;
-use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,15 +12,7 @@ use Zend\Expressive\Authentication\UserInterface;
 
 class PostAction extends ChatAction
 {
-    private $eventStreamFormatter;
     private $inc = 0;
-
-    public function __construct(UsersConnectionsService $usersConnections, EventStreamFormatterService $eventStreamFormatter)
-    {
-        parent::__construct($usersConnections);
-
-        $this->eventStreamFormatter = $eventStreamFormatter;
-    }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -49,9 +39,9 @@ class PostAction extends ChatAction
             'time' => $time,
             'id' => $id,
         ];
+        $this->messagesStorage->add($message);
 
-        $usersConnections = $this->getUsersConnections();
-        $usersConnections->walk(
+        $this->usersConnections->walk(
             function (SwooleEventStreamResponse $response) use ($message): void {
                 $data = [
                     'status' => 'success',
@@ -75,6 +65,7 @@ class PostAction extends ChatAction
             'status' => 'success',
             'data' => [
                 'time' => $time,
+                'id' => $id,
             ],
         ]);
     }

@@ -6,12 +6,10 @@ namespace App\Test\Service;
 
 use App\Exception\UserConnectionNotExistsException;
 use App\RequestHandlerSwooleRunner;
-use App\Service\EventStreamFormatterService;
 use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use App\Test\User;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Psr\Http\Message\StreamInterface;
 use Zend\Diactoros\ServerRequest;
 
@@ -20,11 +18,7 @@ class UsersConnectionsServiceTest extends TestCase
 {
     public function testAddNewConnection(): UsersConnectionsService
     {
-        $eventStreamFormatter = $this->prophesize(EventStreamFormatterService::class);
-        /** @var array $array */
-        $array = Argument::type('array');
-        $eventStreamFormatter->getEventStreamMessage($array)->willReturn("data: \"test\"\n\n");
-        $usersConnections = new UsersConnectionsService($eventStreamFormatter->reveal());
+        $usersConnections = new UsersConnectionsService();
         for ($i = 1; $i <= 5; ++$i) {
             $this->addUserConnection($usersConnections, $i);
         }

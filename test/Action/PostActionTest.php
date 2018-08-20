@@ -6,6 +6,7 @@ namespace App\Test\Action;
 
 use App\Action\PostAction;
 use App\Service\EventStreamFormatterService;
+use App\Service\MessageStorageService;
 use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use App\Test\StringStream;
@@ -18,6 +19,8 @@ use Zend\Expressive\Authentication\UserInterface;
 
 class PostActionTest extends TestCase
 {
+    use AssertResponseFormat;
+
     public function testHandle(): void
     {
         $uid = \md5('uid');
@@ -110,6 +113,44 @@ class PostActionTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        (new PostAction($usersConnections->reveal(), $eventStreamFormatter->reveal()))->handle($request);
+        $messageStorage = $this->prophesize(MessageStorageService::class);
+        /** @var array $array */
+        $array = Argument::type('array');
+        $messageStorage
+            ->add($array)
+            ->will(
+                function (array $args) use ($self, $user, $requestJson): void {
+                    $message = $args[0];
+
+                    $self::assertArrayHasKey('user', $message);
+                    $userData = $message['user'];
+                    $self::assertArrayHasKey('name', $userData);
+                    $self::assertSame($user->getDetail('name'), $userData['name']);
+                    $self::assertArrayHasKey('uid', $userData);
+                    $self::assertSame($user->getIdentity(), $userData['uid']);
+
+                    $self::assertArrayHasKey('message', $message);
+                    $self::assertSame($requestJson['message'], $message['message']);
+
+                    $self::assertArrayHasKey('time', $message);
+                    $self::assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{4}$/', $message['time']);
+
+                    $self::assertArrayHasKey('id', $message);
+                    $self::assertInternalType('string', $message['id']);
+                }
+            )
+            ->shouldBeCalledOnce()
+        ;
+
+        $action = new PostAction($usersConnections->reveal(), $messageStorage->reveal(), $eventStreamFormatter->reveal());
+        $response = $action->handle($request);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $responseBody = $response->getBody()->getContents();
+        $data = $this->assertSuccessResponseFormat($responseBody);
+        $this->assertArrayHasKey('time', $data);
+        $this->assertRegExp('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{4}$/', $data['time']);
+        $this->assertArrayHasKey('id', $data);
+        $this->assertInternalType('string', $data['id']);
     }
 }

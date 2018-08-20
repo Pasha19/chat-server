@@ -21,4 +21,5 @@ return [
         'Access-Control-Allow-Headers' => 'Content-Type, Authorization',
     ],
     'app_monitoring_interval' => 20000,
+    'app_store_messages' => 20,
 ];

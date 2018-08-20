@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace App\Container;
 
 use App\Action\ChatAction;
-use App\Action\PostAction;
 use App\Service\EventStreamFormatterService;
+use App\Service\MessageStorageService;
 use App\Service\UsersConnectionsService;
 use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class PostActionFactory implements FactoryInterface
+class ChatActionFactory implements FactoryInterface
 {
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null): ChatAction
     {
-        return new PostAction(
+        return new $requestedName(
             $container->get(UsersConnectionsService::class),
+            $container->get(MessageStorageService::class),
             $container->get(EventStreamFormatterService::class)
         );
     }

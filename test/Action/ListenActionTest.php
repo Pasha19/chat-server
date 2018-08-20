@@ -6,6 +6,8 @@ namespace App\Test\Action;
 
 use App\Action\ListenAction;
 use App\RequestHandlerSwooleRunner;
+use App\Service\EventStreamFormatterService;
+use App\Service\MessageStorageService;
 use App\Service\UsersConnectionsService;
 use App\SwooleEventStreamResponse;
 use App\Test\User;
@@ -22,16 +24,51 @@ class ListenActionTest extends TestCase
         $user = new User('name', \md5('uid'));
 
         $request = new ServerRequest();
+        $lastEventId = \md5((string) \time());
         $request = $request
             ->withAttribute(RequestHandlerSwooleRunner::SWOOLE_REQUEST_FD_ATTRIBUTE, 1)
             ->withAttribute(UserInterface::class, $user)
+            ->withQueryParams([ListenAction::LAST_EVENT_ID_PARAM => $lastEventId])
         ;
+
         /** @var SwooleEventStreamResponse $response */
         $response = Argument::type(SwooleEventStreamResponse::class);
         $usersConnections = $this->prophesize(UsersConnectionsService::class);
-        $usersConnections->addUserConnection($user, $response, $request)->shouldBeCalledTimes(1);
+        $usersConnections->addUserConnection($user, $response, $request)->shouldBeCalledOnce();
 
-        (new ListenAction($usersConnections->reveal()))->handle($request);
+        $messageStorage = $this->prophesize(MessageStorageService::class);
+        $id = \md5('last_id');
+        $messages = [
+            [
+                'message' => 'message1',
+                'id' => \md5('id'),
+            ],
+            [
+                'message' => 'message2',
+                'id' => $id,
+            ],
+        ];
+        $messageStorage
+            ->getMessagesLaterThan($lastEventId)
+            ->willReturn($messages)
+        ;
+
+        $eventStreamFormatter = $this->prophesize(EventStreamFormatterService::class);
+        $data = 'data: '.\json_encode($messages)."\n\n";
+        $eventStreamFormatter
+            ->getEventStreamMessage([
+                'event' => 'connect',
+                'data' => \json_encode([
+                    'status' => 'success',
+                    'data' => $messages,
+                ]),
+                'id' => $id,
+            ])
+            ->willReturn($data)
+            ->shouldBeCalledOnce()
+        ;
+
+        (new ListenAction($usersConnections->reveal(), $messageStorage->reveal(), $eventStreamFormatter->reveal()))->handle($request);
     }
 
     /**
@@ -52,8 +89,14 @@ class ListenActionTest extends TestCase
         $request = Argument::any();
         $usersConnections->addUserConnection($user, $response, $request)->shouldNotBeCalled();
 
-        $action = new ListenAction($usersConnections->reveal());
-        $action->handle($serverRequest);
+        $messageStorage = $this->prophesize(MessageStorageService::class);
+        /** @var string $string */
+        $string = Argument::type('string');
+        $messageStorage->getMessagesLaterThan($string)->shouldNotBeCalled();
+
+        $eventStreamFormatter = $this->prophesize(EventStreamFormatterService::class);
+
+        (new ListenAction($usersConnections->reveal(), $messageStorage->reveal(), $eventStreamFormatter->reveal()))->handle($serverRequest);
     }
 
     public function dataProvider(): array

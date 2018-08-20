@@ -8,16 +8,16 @@ use App\Action\ListenAction;
 use App\Action\PostAction;
 use App\Action\RegisterAction;
 use App\Container\AuthServiceFactory;
+use App\Container\ChatActionFactory;
 use App\Container\ErrorLoggerDelegator;
-use App\Container\ListenActionFactory;
-use App\Container\PostActionFactory;
+use App\Container\MessageStorageServiceFactory;
 use App\Container\RegisterActionFactory;
 use App\Container\RequestHandlerSwooleRunnerFactory;
 use App\Container\TokenServiceFactory;
-use App\Container\UserConnectionsServiceFactory;
 use App\Service\AuthService;
 use App\Service\EventStreamFormatterService;
 use App\Service\MemoryUsageService;
+use App\Service\MessageStorageService;
 use App\Service\SwooleEmitterFactoryService;
 use App\Service\TokenService;
 use App\Service\UsernameValidatorService;
@@ -43,23 +43,24 @@ class ConfigProvider
     {
         return [
             'invokables' => [
-                MemoryUsageService::class,
                 Builder::class,
-                Signer::class => Sha256::class,
-                Parser::class,
-                ValidationData::class,
-                UsernameValidatorService::class,
-                SwooleEmitterFactoryService::class,
                 EventStreamFormatterService::class,
+                MemoryUsageService::class,
+                Parser::class,
+                Signer::class => Sha256::class,
+                SwooleEmitterFactoryService::class,
+                UsernameValidatorService::class,
+                UsersConnectionsService::class,
+                ValidationData::class,
             ],
             'factories' => [
+                AuthService::class => AuthServiceFactory::class,
+                ListenAction::class => ChatActionFactory::class,
+                MessageStorageService::class => MessageStorageServiceFactory::class,
+                PostAction::class => ChatActionFactory::class,
+                RegisterAction::class => RegisterActionFactory::class,
                 RequestHandlerRunner::class => RequestHandlerSwooleRunnerFactory::class,
                 TokenService::class => TokenServiceFactory::class,
-                RegisterAction::class => RegisterActionFactory::class,
-                AuthService::class => AuthServiceFactory::class,
-                ListenAction::class => ListenActionFactory::class,
-                PostAction::class => PostActionFactory::class,
-                UsersConnectionsService::class => UserConnectionsServiceFactory::class,
             ],
             'delegators' => [
                 ErrorHandler::class => [
